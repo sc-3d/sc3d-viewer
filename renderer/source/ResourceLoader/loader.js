@@ -15,6 +15,17 @@ class gltfLoader
             .then(() => gltf.initGl(webGlContext));
     }
 
+    static async loadGlb(gltf, webGlContext, buffers, additionalFiles)
+    {
+        const buffersPromise = gltfLoader.loadBuffers(gltf, buffers, additionalFiles);
+
+        await buffersPromise; // images might be stored in the buffers
+        const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles);
+
+        return await Promise.all([buffersPromise, imagesPromise])
+            .then(() => gltf.initGl(webGlContext));
+    }
+
     static unload(gltf)
     {
         for (let image of gltf.images)

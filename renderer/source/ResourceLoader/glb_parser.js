@@ -231,10 +231,10 @@ class GlbParser
 
                 // test
                 if (image.uri == "." && i == 0) {
-                    //image.uri = "./apprenticebuilder_default_a.ktx";
+                    //image.uri = "apprenticebuilder_default_a.ktx";
                     image.uri = "ImageToStl.com_apprenticebuilder_default_a.png";
                     //image.mimeType = "image/ktx2";
-                    image.mimeType = "image/png";
+                    //image.mimeType = "image/png";
                 }
 
                 json.images.push(image);
@@ -257,8 +257,25 @@ class GlbParser
                     let array = m.extensionsArray();                    
                     let arrayBuffer = array.buffer.slice(array.byteOffset, array.byteLength + array.byteOffset);                    
                     material.extensions = flexbuffers.toObject(arrayBuffer);
-                    
                 }
+                
+                material.pbrMetallicRoughness = {
+                    "baseColorTexture" : {
+                        "extensions" : {
+                            "KHR_texture_transform" : {
+                                "scale" : [
+                                    0.00024420024420024420024420024420024,
+                                    0.00024420024420024420024420024420024
+                                ]
+                            }
+                        },
+                        "index" : 0,
+                        "texCoord" : 0
+                    },
+                    "metallicFactor" : 0,
+                    "roughnessFactor" : 1
+                };
+                
                 json.materials.push(material);
             }
         }

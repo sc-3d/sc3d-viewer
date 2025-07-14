@@ -45,6 +45,9 @@ class ResourceLoader
      */
     async loadGltf(gltfFile, externalFiles)
     {
+        console.log(gltfFile);
+        console.log(externalFiles);
+
         let isGlb = undefined;
         let buffers = undefined;
         let json = undefined;
@@ -127,8 +130,15 @@ class ResourceLoader
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
         await init(`${this.libPath}mikktspace_bg.wasm`);
-        await gltfLoader.load(gltf, this.view.context, buffers);
 
+        if (isGlb)
+        {
+            await gltfLoader.loadGlb(gltf, this.view.context, buffers, externalFiles);    
+        } 
+        else 
+        {
+            await gltfLoader.load(gltf, this.view.context, buffers);
+        }
         return gltf;
     }
 
