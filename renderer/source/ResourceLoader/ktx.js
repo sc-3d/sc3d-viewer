@@ -75,27 +75,75 @@ class KtxDecoder {
         const data = new Uint8Array(await response.arrayBuffer());
         const texture = new this.libktx.ktxTexture(data);
         this.transcode(texture);
+        
+        let astcSupported = !!this.gl.getExtension('WEBGL_compressed_texture_astc');
+        if (!astcSupported) {
+            console.log(texture);
+            var result = texture.decodeAstc();
+            console.log(result);
+        }
+
         let uploadResult = texture.glUpload();
+        /*
         if (uploadResult.texture == null)
         {
             console.error("Could not load KTX data");
             return undefined;
         }
-        uploadResult.texture.levels = Math.log2(texture.baseWidth);
-        return uploadResult.texture;
+        */
+        if (uploadResult.error != this.gl.NO_ERROR) {
+            console.error('WebGL error when uploading texture, code = '
+                + result.error.toString(16));
+            return undefined;
+        }
+        if (uploadResult.object === undefined) {
+            console.error('Texture upload failed. See console for details.');
+            return undefined;
+        }
+        if (uploadResult.target != this.gl.TEXTURE_2D) {
+            console.error('Loaded texture is not a TEXTURE2D.');
+            return undefined;
+        }
+        //uploadResult.texture.levels = Math.log2(texture.baseWidth);
+        uploadResult.object.levels = Math.log2(texture.baseWidth);
+        return uploadResult.object;
     }
 
     async loadKtxFromBuffer(data) {
         await this.initializied;
         const texture = new this.libktx.ktxTexture(data);
         this.transcode(texture);
+
+        let astcSupported = !!this.gl.getExtension('WEBGL_compressed_texture_astc');        
+        if (!astcSupported) {
+            console.log(texture);
+            var result = texture.decodeAstc();
+            console.log(result);
+        }
+
         const uploadResult = texture.glUpload();
+        /*
         if (uploadResult.texture == null)
         {
             console.error("Could not load KTX data");
             return undefined;
         }
         return uploadResult.texture;
+        */
+        if (uploadResult.error != this.gl.NO_ERROR) {
+            console.error('WebGL error when uploading texture, code = '
+                + result.error.toString(16));
+            return undefined;
+        }
+        if (uploadResult.object === undefined) {
+            console.error('Texture upload failed. See console for details.');
+            return undefined;
+        }
+        if (uploadResult.target != this.gl.TEXTURE_2D) {
+            console.error('Loaded texture is not a TEXTURE2D.');
+            return undefined;
+        }
+        return uploadResult.object;
     }
 }
 

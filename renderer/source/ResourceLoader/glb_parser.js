@@ -231,8 +231,8 @@ class GlbParser
 
                 // test
                 if (image.uri == "." && i == 0) {
-                    //image.uri = "apprenticebuilder_default_a.ktx";
-                    image.uri = "ImageToStl.com_apprenticebuilder_default_a.png";
+                    image.uri = "apprenticebuilder_default_a.ktx";
+                    //image.uri = "ImageToStl.com_apprenticebuilder_default_a.png";
                     //image.mimeType = "image/ktx2";
                     //image.mimeType = "image/png";
                 }

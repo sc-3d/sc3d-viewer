@@ -185,6 +185,14 @@
                                     </b-select>
                                 </b-field>
 
+                                <b-field label="Supercell Models" class="subtitle">
+                                    <b-select>
+                                        <!-- test -->
+                                         
+                                        <option>Apprentice Builder</option>
+                                    </b-select>
+                                </b-field>
+
                                 <b-field label="Variants" class="subtitle"
                                     v-bind:style="[materialVariants.length <= 1 ? {'display': 'none'} : {}]">
                                     <b-field v-for="item in materialVariants" v-bind:key="item"
@@ -201,6 +209,7 @@
                                         </option>
                                     </b-select>
                                 </b-field>
+                                
                             </div>
                         </b-tab-item>
 

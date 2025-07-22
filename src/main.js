@@ -2,7 +2,7 @@ import { GltfView } from "gltf-renderer";
 
 import { UIModel } from "./logic/uimodel.js";
 import { app } from "./ui/ui.js";
-import { EMPTY, from, merge } from "rxjs";
+import { EMPTY, from, merge, of } from "rxjs";
 import { mergeMap, map, share, catchError } from "rxjs/operators";
 import {
     GltfModelPathProvider,
@@ -45,8 +45,15 @@ export default async () => {
 
     const uiModel = new UIModel(app, pathProvider, environmentPaths);
 
+    const chromeVersionString = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+    let disableValidator = undefined;
+    if (chromeVersionString) {
+        if (parseInt(chromeVersionString[2]) == 138) {
+            disableValidator = of({"error" : "Due to a bug in Chromium 138, glTF Validator is disabled in browsers with this specific Chromium version."});
+        }
+    }
 
-    const validation = uiModel.model.pipe(
+    const validation = disableValidator ? disableValidator.pipe() : uiModel.model.pipe(
         mergeMap((model) => {
             const func = async(model) => {
                 try {
@@ -66,13 +73,13 @@ export default async () => {
                                 });
                             });
                         };
-                        //const response = await fetch(model.mainFile);
-                        //const buffer = await response.arrayBuffer();
-                        //return await validateBytes(new Uint8Array(buffer), {
-                        //    externalResourceFunction: externalRefFunction,
-                        //    uri: model.mainFile
-                        //});
-                        return await externalRefFunction(model.mainFile);
+                        const response = await fetch(model.mainFile);
+                        const buffer = await response.arrayBuffer();
+                        return await validateBytes(new Uint8Array(buffer), {
+                            externalResourceFunction: externalRefFunction,
+                            uri: model.mainFile
+                        });
+                        //return await externalRefFunction(model.mainFile);
 
                     } else if (Array.isArray(model.mainFile)) {
                         const externalRefFunction = (uri) => {
@@ -98,13 +105,13 @@ export default async () => {
                             });
                         };
 
-                        //const buffer = await model.mainFile[1].arrayBuffer();
-                        //return await validateBytes(new Uint8Array(buffer),
-                        //    {
-                        //        externalResourceFunction: externalRefFunction,
-                        //        uri: model.mainFile[0]
-                        //    });
-                        return await externalRefFunction(model.mainFile[0]);
+                        const buffer = await model.mainFile[1].arrayBuffer();
+                        return await validateBytes(new Uint8Array(buffer),
+                            {
+                                externalResourceFunction: externalRefFunction,
+                                uri: model.mainFile[0]
+                            });
+                        //return await externalRefFunction(model.mainFile[0]);
                     }
                 } catch (error) {
                     console.error(error);

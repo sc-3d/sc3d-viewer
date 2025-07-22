@@ -273,6 +273,7 @@ class UIModel
 
     updateValidationReport(validationReportObservable)
     {
+        console.log(validationReportObservable);
         validationReportObservable.subscribe(data => {
             this.app.validationReport = data;
             this.app.validationReportDescription = this.createValidationReportDescription(data);
