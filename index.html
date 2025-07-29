@@ -186,10 +186,10 @@
                                 </b-field>
 
                                 <b-field label="Supercell Models" class="subtitle">
-                                    <b-select>
-                                        <!-- test -->
-                                         
-                                        <option>Apprentice Builder</option>
+                                    <b-select v-model="selectedSkin.name" v-on:input="skinChanged.next($event.target.value);">
+                                        <option v-for="(item) in skins" v-bind:value="item">
+                                            {{ item }}
+                                        </option>
                                     </b-select>
                                 </b-field>
 

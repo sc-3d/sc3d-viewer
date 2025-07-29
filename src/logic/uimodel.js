@@ -10,10 +10,13 @@ import normalizeWheel from 'normalize-wheel';
 // as close as possible
 class UIModel
 {
-    constructor(app, modelPathProvider, environments) {
+    constructor(app, modelPathProvider, environments, skinPathProvider) {
         this.app = app;
 
         this.app.models = modelPathProvider.getAllKeys();
+        this.app.skins = skinPathProvider.getAllKeys();
+        console.log(app);
+        console.log(this.app.skins);
 
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
@@ -100,12 +103,29 @@ class UIModel
             map(value => ({mainFile: value})),
         );
 
+        const dropdownSkinChanged = app.skinChanged.pipe(
+            filter(value => value !== null),
+            map(value => { return skinPathProvider.resolve(value); }),
+            map(value => ({
+                mainFile: "/assets/" + value.geometryFile, 
+                additionalFiles: ["/assets/" + value.textureFile] // TODO: add all textures
+            })),
+        );
+
+        app.skinChanged.pipe(filter(value => value !== null)).subscribe(value => {
+            console.log("skinChanged subscribe");
+            
+            this.app.selectedSkin = skinPathProvider.resolve(value);
+            console.log(this.app);
+            console.log(this.app.selectedSkin);
+        });
+
         const dropdownFlavourChanged = app.flavourChanged.pipe(
             map(value => modelPathProvider.resolve(app.selectedModel, value)),
             map(value => ({mainFile: value})),
         );
 
-        this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.droppedGltf);
+        this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.droppedGltf, dropdownSkinChanged);
 
         this.hdr = merge(selectedEnvironment, this.addEnvironment, inputObservables.droppedHdr).pipe(
             startWith(environments[initialEnvironment])

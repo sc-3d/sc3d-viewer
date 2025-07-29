@@ -7,6 +7,7 @@ import { mergeMap, map, share, catchError } from "rxjs/operators";
 import {
     GltfModelPathProvider,
     fillEnvironmentWithPaths,
+    Sc3dModelPathProvider,
 } from "./model_path_provider.js";
 
 import {validateBytes} from "gltf-validator";
@@ -26,6 +27,10 @@ export default async () => {
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main"
     );
     await pathProvider.initialize();
+    
+    const skinProvider = new Sc3dModelPathProvider("/assets");
+    await skinProvider.initialize();
+
     const environmentPaths = fillEnvironmentWithPaths(
         {
             Cannon_Exterior: "Cannon Exterior",
@@ -43,7 +48,7 @@ export default async () => {
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Environments/low_resolution_hdrs/"
     );
 
-    const uiModel = new UIModel(app, pathProvider, environmentPaths);
+    const uiModel = new UIModel(app, pathProvider, environmentPaths, skinProvider);
 
     const chromeVersionString = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
     let disableValidator = undefined;
@@ -134,6 +139,25 @@ export default async () => {
                 resourceLoader
                     .loadGltf(model.mainFile, model.additionalFiles)
                     .then((gltf) => {
+
+                        console.log(uiModel);
+                        console.log(uiModel.app);
+                        console.log(uiModel.app.selectedSkin);
+
+                        console.log(gltf.images);
+                        for (let i = 0; i < gltf.images.length; i++) {
+                            if (gltf.images[i].uri !== undefined) {
+                                const lastChar = gltf.images[i].uri.at(-1);
+                                console.log(lastChar);
+                                if (lastChar == ".") {
+                                    if (i == 0) {
+                                        gltf.images[i].uri = "/assets/" + uiModel.app.selectedSkin.textureFile;
+                                        gltf.images[i].mimeType = "image/ktx2";
+                                    }
+                                }
+                            }
+                        }
+
                         state.gltf = gltf;
                         const defaultScene = state.gltf.scene;
                         state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;

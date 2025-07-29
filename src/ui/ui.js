@@ -10,7 +10,8 @@ const appCreated = createApp({
             flavourChanged: new Subject(),
             sceneChanged: new Subject(),
             cameraChanged: new Subject(),
-            
+            skinChanged: new Subject(),
+
             debugchannelChanged: new Subject(),
             tonemapChanged: new Subject(),
             skinningChanged: new Subject(),
@@ -66,6 +67,7 @@ const appCreated = createApp({
             statistics: [],
 
             selectedModel: "DamagedHelmet",
+            selectedSkin: {},
             selectedFlavour: "",
             selectedScene: {},
             selectedCamera: {},

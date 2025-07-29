@@ -79,9 +79,10 @@ export default {
             dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),
         scss(), // Version 4 is not working
-        del({ targets: 'dist/*' }),
+        //del({ targets: 'dist/*' }),
         copyFile(".", "./dist", "index.html", true),
         copyFile(".", "./dist", "main.js", true),
+        copyFile("./assets", "./dist/assets", "skins.json", true),
         copyFiles("./assets/images", "./dist/assets/images", true),
         copyFiles("./assets/ui", "./dist/assets/ui", true),
         copyFiles("./renderer/source/libs", "./dist/libs", true),

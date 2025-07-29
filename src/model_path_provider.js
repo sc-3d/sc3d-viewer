@@ -75,3 +75,41 @@ export function fillEnvironmentWithPaths(environmentNames, environmentsBasePath)
     });
     return environmentNames;
 }
+
+export class Sc3dModelPathProvider
+{
+    constructor(url) {
+        this.url = url;
+        this.modelsDictionary = undefined;
+    }
+
+    async initialize() {
+        const response = await fetch(this.url + "/skins.json");
+        this.populateDictionary(await response.json());
+    }
+
+    resolve(modelKey)
+    {
+        return this.modelsDictionary[modelKey];
+    }
+
+    getAllKeys()
+    {
+        return Object.keys(this.modelsDictionary);
+    }
+
+    populateDictionary(modelIndexer)
+    {
+        const modelsFolder = this.url + "/Models";
+        this.modelsDictionary = {};
+        for (const entry of modelIndexer)
+        {
+            if (entry.geometryFile === undefined || entry.name === undefined)
+            {
+                continue;
+            }
+            
+            this.modelsDictionary[entry.name] = entry;
+        }
+    }
+}

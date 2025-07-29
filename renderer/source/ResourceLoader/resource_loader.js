@@ -142,6 +142,104 @@ class ResourceLoader
         return gltf;
     }
 
+    async loadSkin(skin)
+    {
+        let isGlb = undefined;
+        let buffers = undefined;
+        let json = undefined;
+        let data = undefined;
+        let filename = "";
+        let gltfFile = skin.geometryFile;
+
+        if (typeof gltfFile === "string")
+        {
+            const response = await fetch(gltfFile);
+            const responseData = await response.arrayBuffer();
+            const uintData = new Uint8Array(responseData);
+            const fileMagicNumbers = new TextDecoder().decode(uintData.subarray(0, 5));
+
+            isGlb = fileMagicNumbers.startsWith("glTF");
+            if(isGlb) {
+                json = data = responseData;
+            } else {
+                json = data = JSON.parse(new TextDecoder().decode(uintData));
+            }
+
+            filename = gltfFile;
+        }
+        else if (gltfFile instanceof ArrayBuffer)
+        {
+            isGlb = externalFiles === undefined;
+            if (isGlb)
+            {
+                data = gltfFile;
+            }
+            else
+            {
+                console.error("Only .glb files can be loaded from an array buffer");
+            }
+        }
+        else if (Array.isArray(gltfFile) && typeof(File) !== 'undefined' && gltfFile[1] instanceof File)
+        {
+            let fileContent = gltfFile[1];
+            
+            filename = gltfFile[1].name;
+            isGlb = getIsGlb(filename);
+            //filename = gltfFile[0];
+            //isGlb = getIsGlb(gltfFile[1].name);
+
+            if (isGlb)
+            {
+                data = await AsyncFileReader.readAsArrayBuffer(fileContent);
+            }
+            else
+            {
+                data = await AsyncFileReader.readAsText(fileContent);
+                json = JSON.parse(data);
+                buffers = externalFiles;
+            }
+        }
+        else
+        {   
+            // Load empty glTF
+            data = "{\"asset\":{\"version\": \"2.0\"}}";
+            filename = "empty";
+            isGlb = false;
+            json = JSON.parse(data);
+        }
+
+        if (isGlb)
+        {
+            const glbParser = new GlbParser(data);
+            const glb = glbParser.extractGlbData();
+            json = glb.json;
+            buffers = glb.buffers;
+        }
+
+        const gltf = new glTF(filename);
+        gltf.ktxDecoder = this.view.ktxDecoder;
+        //Make sure draco decoder instance is ready
+        gltf.fromJson(json);
+
+        // because the gltf image paths are not relative
+        // to the gltf, we have to resolve all image paths before that
+        for (const image of gltf.images)
+        {
+            image.resolveRelativePath(getContainingFolder(gltf.path));
+        }
+        await init(`${this.libPath}mikktspace_bg.wasm`);
+
+        if (isGlb)
+        {
+            await gltfLoader.loadGlb(gltf, this.view.context, buffers, externalFiles);    
+        } 
+        else 
+        {
+            await gltfLoader.load(gltf, this.view.context, buffers);
+        }
+        return gltf;
+    }
+
     /**
      * loadEnvironment asynchroneously, run IBL sampling and create resources for rendering
      * @param {(String | ArrayBuffer | File)} environmentFile the .hdr file either as path or resource
