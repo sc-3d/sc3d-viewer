@@ -439,8 +439,8 @@ class GlbParser
             }
         }
         // textures
+        json.textures = [];
         if (fla2Root.texturesLength()) {
-            json.textures = [];
             for (let i = 0; i < fla2Root.texturesLength(); i++) {
                 let texture = {};
                 let t = fla2Root.textures(i);
@@ -448,6 +448,10 @@ class GlbParser
                 texture.source = t.source();
         
                 json.textures.push(texture);
+            }
+        } else {
+            for (let i = 0; i < fla2Root.imagesLength(); i++) {
+                json.textures.push({sampler: 0, source: i});
             }
         }
         return json;

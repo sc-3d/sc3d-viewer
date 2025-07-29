@@ -135,9 +135,13 @@ export default async () => {
             // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
             resourceLoader.initKtxLib();
 
+            console.log("Loading gltf");
+            console.log(model);
+
             return from(
                 resourceLoader
-                    .loadGltf(model.mainFile, model.additionalFiles)
+                    .loadGltf(model.mainFile, model.additionalFiles, 
+                        model.skin ? uiModel.app.selectedSkin : undefined)
                     .then((gltf) => {
 
                         console.log(uiModel);
@@ -145,6 +149,7 @@ export default async () => {
                         console.log(uiModel.app.selectedSkin);
 
                         console.log(gltf.images);
+                        /*
                         for (let i = 0; i < gltf.images.length; i++) {
                             if (gltf.images[i].uri !== undefined) {
                                 const lastChar = gltf.images[i].uri.at(-1);
@@ -157,7 +162,7 @@ export default async () => {
                                 }
                             }
                         }
-
+                        */
                         state.gltf = gltf;
                         const defaultScene = state.gltf.scene;
                         state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;

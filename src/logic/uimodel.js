@@ -108,7 +108,8 @@ class UIModel
             map(value => { return skinPathProvider.resolve(value); }),
             map(value => ({
                 mainFile: "/assets/" + value.geometryFile, 
-                additionalFiles: ["/assets/" + value.textureFile] // TODO: add all textures
+                additionalFiles: ["/assets/" + value.textureFile], // TODO: add all textures
+                skin: true
             })),
         );
 

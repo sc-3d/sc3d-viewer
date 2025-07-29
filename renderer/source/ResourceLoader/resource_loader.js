@@ -43,7 +43,7 @@ class ResourceLoader
      * @param {File[]} [externalFiles] additional files containing resources that are referenced in the gltf
      * @returns {Promise} a promise that fulfills when the gltf file was loaded
      */
-    async loadGltf(gltfFile, externalFiles)
+    async loadGltf(gltfFile, externalFiles, skin)
     {
         console.log(gltfFile);
         console.log(externalFiles);
@@ -123,12 +123,27 @@ class ResourceLoader
         //Make sure draco decoder instance is ready
         gltf.fromJson(json);
 
-        // because the gltf image paths are not relative
-        // to the gltf, we have to resolve all image paths before that
-        for (const image of gltf.images)
-        {
-            image.resolveRelativePath(getContainingFolder(gltf.path));
+        if (skin !== undefined) {
+            
+            for (let i = 0; i < gltf.images.length; i++) {
+                if (gltf.images[i].uri == ".") {
+                    if (i == 0) {
+                        gltf.images[i].uri = "/assets/" + skin.textureFile;
+                        gltf.images[i].mimeType = "image/ktx2";
+                    }
+                }
+            }
+        } 
+        else {
+
+            // because the gltf image paths are not relative
+            // to the gltf, we have to resolve all image paths before that
+            for (const image of gltf.images)
+            {
+                image.resolveRelativePath(getContainingFolder(gltf.path));
+            }
         }
+
         await init(`${this.libPath}mikktspace_bg.wasm`);
 
         if (isGlb)
@@ -149,7 +164,8 @@ class ResourceLoader
         let json = undefined;
         let data = undefined;
         let filename = "";
-        let gltfFile = skin.geometryFile;
+        let gltfFile = "/assets/" + skin.geometryFile;
+        let externalFiles = ["/assets/" + skin.textureFile ];
 
         if (typeof gltfFile === "string")
         {
