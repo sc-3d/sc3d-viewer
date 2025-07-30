@@ -246,20 +246,6 @@ class GlbParser
             json.materials = [];
             for (let i = 0; i < fla2Root.materialsLength(); i++) {
                 let material = {};
-                let m = fla2Root.materials(i);
-                if (m.extensionsLength()) {
-                    //std::string ext;
-                    //m->extensions_flexbuffer_root().ToString(false, true, ext);
-                    //const auto edoc = RapidJsonUtils::CreateDocumentFromString(ext);
-                    //rapidjson::Value extension(rapidjson::kObjectType);
-                    //extension.CopyFrom(edoc, allocator);
-                    //material.AddMember("extensions", extension, allocator);
-                    
-                    let array = m.extensionsArray();                    
-                    let arrayBuffer = array.buffer.slice(array.byteOffset, array.byteLength + array.byteOffset);                    
-                    material.extensions = flexbuffers.toObject(arrayBuffer);
-                }
-                
                 material.pbrMetallicRoughness = {
                     "baseColorTexture" : {
                         "extensions" : {
@@ -274,8 +260,60 @@ class GlbParser
                         "texCoord" : 0
                     },
                     "metallicFactor" : 0,
-                    "roughnessFactor" : 1
+                    "roughnessFactor" : 1.0
                 };
+
+                let m = fla2Root.materials(i);
+                if (m.extensionsLength()) {
+                    //std::string ext;
+                    //m->extensions_flexbuffer_root().ToString(false, true, ext);
+                    //const auto edoc = RapidJsonUtils::CreateDocumentFromString(ext);
+                    //rapidjson::Value extension(rapidjson::kObjectType);
+                    //extension.CopyFrom(edoc, allocator);
+                    //material.AddMember("extensions", extension, allocator);
+                    
+                    let array = m.extensionsArray();                    
+                    let arrayBuffer = array.buffer.slice(array.byteOffset, array.byteLength + array.byteOffset);                    
+                    material.extensions = flexbuffers.toObject(arrayBuffer);
+                    
+                    console.log(material.extensions.SC_shader);
+                    console.log(material.extensions.SC_shader.variables.opacity);
+                    // Glass IOR1.0_White_R0_M0_T1_S1 
+                    // White BaseColor - 0 Roughness - 0 Metallic - 1 Transmision - 1 Specular
+                    if (material.extensions.SC_shader.name.includes("Glass") && material.extensions.SC_shader.variables.opacity < 1) {
+                        material.alphaMode = "BLEND";
+                        material.doubleSided = true;
+                        //material.pbrMetallicRoughness.baseColorFactor = [0.1, 0.1, 0.1, 0.1];
+                        delete material.pbrMetallicRoughness.baseColorTexture; // remove texture, use default baseColorFactor[1, 1, 1, 1]
+                        material.pbrMetallicRoughness.metallicFactor = 0.0;
+                        material.pbrMetallicRoughness.roughnessFactor = 0.0;
+
+                        material.extensions.KHR_materials_ior = { "ior": 1.0 };
+                        material.extensions.KHR_materials_specular = {
+                            "specularColorFactor": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ],
+                            "specularFactor": 1.0
+                        };
+                        material.extensions.KHR_materials_transmission = { "transmissionFactor": 1.0 };
+                        material.extensions.KHR_materials_volume = { "thicknessFactor": 0.1 };
+
+                    } else if (material.extensions.SC_shader.name.includes("Pet_RageJellyTransp")) {
+                        material.alphaMode = "BLEND";
+                        material.doubleSided = true;
+                        material.pbrMetallicRoughness.baseColorFactor = [0.8, 0.8, 0.8, 0.5];
+
+                    } else if (material.extensions.SC_shader.variables.opacity < 1) {
+                        material.alphaMode = "BLEND";
+                        material.doubleSided = true;
+                        material.pbrMetallicRoughness.baseColorFactor = [1.0, 1.0, 1.0, material.extensions.SC_shader.variables.opacity];
+                    }
+
+                }
+                
+                
                 
                 json.materials.push(material);
             }
