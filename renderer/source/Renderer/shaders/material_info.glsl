@@ -219,6 +219,14 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
     info.metallic *= mrSample.b;
 #endif
 
+#ifdef HAS_SC_MATERIAL_MAP
+    // Roughness is stored in the 'g' channel, metallic is stored in the 'a' channel.
+    // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
+    vec4 mrSample = texture(u_MetallicRoughnessSampler, getMetallicRoughnessUV());
+    info.perceptualRoughness *= mrSample.g;
+    info.metallic *= mrSample.a;
+#endif
+
     return info;
 }
 #endif

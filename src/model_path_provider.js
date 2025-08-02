@@ -90,7 +90,19 @@ export class Sc3dModelPathProvider
 
     resolve(modelKey)
     {
-        return this.modelsDictionary[modelKey];
+        let skin = this.modelsDictionary[modelKey];
+        const additionalFiles = [];
+        if (skin.textureFile)
+            additionalFiles.push(skin.textureFile);
+        if (skin.materialMapFile)
+            additionalFiles.push(skin.materialMapFile);
+        if (skin.normalMapFile)
+            additionalFiles.push(skin.normalMapFile);
+        if (skin.emissionMapFile)
+            additionalFiles.push(skin.emissionMapFile);
+        skin.additionalFiles = additionalFiles;
+        
+        return skin;
     }
 
     getAllKeys()

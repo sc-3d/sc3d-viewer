@@ -124,15 +124,24 @@ class ResourceLoader
         gltf.fromJson(json);
 
         if (skin !== undefined) {
-            
+            let mimeType = "image/ktx2";
             for (let i = 0; i < gltf.images.length; i++) {
                 if (gltf.images[i].uri == ".") {
-                    if (i == 0) {
+                    if (i == 0 && skin.textureFile) {
                         gltf.images[i].uri = "/assets/" + skin.textureFile;
-                        gltf.images[i].mimeType = "image/ktx2";
+                        gltf.images[i].mimeType = mimeType;
+                    } else if (i == 1 && skin.materialMapFile) {
+                        gltf.images[i].uri = "/assets/" + skin.materialMapFile;
+                        gltf.images[i].mimeType = mimeType;
+                    } else if (i == 2 && skin.normalMapFile) {
+                        gltf.images[i].uri = "/assets/" + skin.normalMapFile;
+                        gltf.images[i].mimeType = mimeType;
+                    } else if (i == 3 && skin.emissionMapFile) {
+                        gltf.images[i].uri = "/assets/" + skin.emissionMapFile;
+                        gltf.images[i].mimeType = mimeType;
                     }
                 }
-            }
+            }            
         } 
         else {
 
@@ -148,7 +157,57 @@ class ResourceLoader
 
         if (isGlb)
         {
-            await gltfLoader.loadGlb(gltf, this.view.context, buffers, externalFiles);    
+            await gltfLoader.loadGlb(gltf, this.view.context, buffers, externalFiles);
+            if (skin !== undefined) {
+                for (let i = 0; i < gltf.materials.length; i++) {
+                    console.log(gltf.materials[i]);
+
+                    if (gltf.materials[i].extensions) {
+                        let SC_shader = gltf.materials[i].extensions.SC_shader;
+                        if (SC_shader) {
+                            if (skin.materialMapFile) {
+                                if (gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture === undefined) {                                                                       
+                                    gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture = new gltfTextureInfo();
+                                    gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture.fromJson(
+                                        {
+                                            "extensions" : {
+                                                "KHR_texture_transform" : {
+                                                    "scale" : [
+                                                        0.00024420024420024420024420024420024,
+                                                        0.00024420024420024420024420024420024
+                                                    ]
+                                                }
+                                            },
+                                            "index" : SC_shader.variables.specularTex2D.index,
+                                            "texCoord" : 0
+                                        }
+                                    );
+                                }
+                                    
+                                gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture.samplerName = "u_MetallicRoughnessSampler";
+                                //gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture.extensions = {};
+                                //gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture.extensions.KHR_texture_transform = new KHR_texture_transform();                                
+                                //gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture.extensions.KHR_texture_transform.fromJson(
+                                //    {
+                                //        "scale" : [
+                                //            0.00024420024420024420024420024420024,
+                                //            0.00024420024420024420024420024420024
+                                //        ]
+                                //    }   
+                                //);
+                                //gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture.index = SC_shader.variables.specularTex2D.index;
+                                //gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture.texCoord = 0;
+                                gltf.materials[i].parseTextureInfoExtensions(gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture, "MetallicRoughness");
+                                gltf.materials[i].textures.push(gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture);
+                                //gltf.materials[i].defines.push("HAS_METALLIC_ROUGHNESS_MAP 1");
+                                gltf.materials[i].defines.push("HAS_SC_MATERIAL_MAP 1");
+                            }
+                        }
+                    }
+
+                    console.log(gltf.materials[i]);
+                }
+            }    
         } 
         else 
         {
