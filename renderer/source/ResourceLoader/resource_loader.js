@@ -200,7 +200,33 @@ class ResourceLoader
                                 gltf.materials[i].parseTextureInfoExtensions(gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture, "MetallicRoughness");
                                 gltf.materials[i].textures.push(gltf.materials[i].pbrMetallicRoughness.metallicRoughnessTexture);
                                 //gltf.materials[i].defines.push("HAS_METALLIC_ROUGHNESS_MAP 1");
-                                gltf.materials[i].defines.push("HAS_SC_MATERIAL_MAP 1");
+                                gltf.materials[i].defines.push("HAS_SC_MATERIAL_MAP_0 1");
+                                gltf.materials[i].pbrMetallicRoughness.metallicFactor = 1.0;
+                                gltf.materials[i].pbrMetallicRoughness.roughnessFactor = 1.0;
+                            }
+
+                            if (skin.normalMapFile) {
+                                if (gltf.materials[i].normalTexture === undefined)
+                                {
+                                    gltf.materials[i].normalTexture = new gltfTextureInfo();
+                                    gltf.materials[i].normalTexture.fromJson({
+                                        "extensions" : {
+                                            "KHR_texture_transform" : {
+                                                "scale" : [
+                                                    0.00024420024420024420024420024420024,
+                                                    0.00024420024420024420024420024420024
+                                                ]
+                                            }
+                                        },
+                                        "index" : SC_shader.variables.normalTex2D.index,
+                                        "texCoord" : 0
+                                    });
+                                    gltf.materials[i].normalTexture.samplerName = "u_NormalSampler";
+                                    gltf.materials[i].parseTextureInfoExtensions(gltf.materials[i].normalTexture, "Normal");
+                                    gltf.materials[i].textures.push(gltf.materials[i].normalTexture);
+                                    //gltf.materials[i].defines.push("HAS_NORMAL_MAP 1");
+                                    gltf.materials[i].defines.push("HAS_SC_NORMAL_MAP_0 1");
+                                }
                             }
                         }
                     }

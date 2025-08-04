@@ -172,6 +172,25 @@ NormalInfo getNormalInfo(vec3 v)
 #else
     info.n = ng;
 #endif
+
+#ifdef HAS_SC_NORMAL_MAP_0
+    //info.ntex = texture(u_NormalSampler, UV).rgb * 2.0 - vec3(1.0);
+    info.ntex = vec3((texture(u_NormalSampler, UV).ga * 2.0) - vec2(1.0), 0.0);
+    info.ntex *= vec3(u_NormalScale, u_NormalScale, 1.0);
+    //info.ntex = normalize(info.ntex);
+    //info.n = normalize(mat3(t, b, ng) * info.ntex);
+
+    //highp 
+    float nz = 1.0 - dot(info.ntex.xy, info.ntex.xy);
+    if (nz > 0.0)
+    {
+        info.ntex.z = sqrt(nz);
+    }
+    //highp vec3 binormal = b * v_binormalSign;
+    info.n = normalize(((t * info.ntex.x) + ((-b) * info.ntex.y)) + (ng * info.ntex.z));
+    
+#endif
+
     info.t = t;
     info.b = b;
     return info;
@@ -219,7 +238,7 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
     info.metallic *= mrSample.b;
 #endif
 
-#ifdef HAS_SC_MATERIAL_MAP
+#ifdef HAS_SC_MATERIAL_MAP_0
     // Roughness is stored in the 'g' channel, metallic is stored in the 'a' channel.
     // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
     vec4 mrSample = texture(u_MetallicRoughnessSampler, getMetallicRoughnessUV());

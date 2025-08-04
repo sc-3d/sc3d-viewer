@@ -808,11 +808,24 @@ class gltfPrimitive extends GltfObject
             return;
         }
 
-        const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
-        const normals = gltf.accessors[this.attributes.NORMAL].getTypedView(gltf);
-        const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
+        console.log(gltf.extensionsUsed);
+        let tangents = [];
+        if (gltf.extensionsUsed && gltf.extensionsUsed.includes("KHR_mesh_quantization")) {
+            const positions = gltf.accessors[this.attributes.POSITION].getDeinterlacedView(gltf);
+            const normals = gltf.accessors[this.attributes.NORMAL].getNormalizedTypedView(gltf);
+            const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getDeinterlacedView(gltf);
+            
+            //const 
+            tangents = generateTangents(positions, normals, texcoords);
+        }
+        else {
+            const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
+            const normals = gltf.accessors[this.attributes.NORMAL].getTypedView(gltf);
+            const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
 
-        const tangents = generateTangents(positions, normals, texcoords);
+            //const 
+            tangents = generateTangents(positions, normals, texcoords);
+        }
 
         // convert coordinate system handedness to respect output format of MikkTSpace
         for (let idx = 0; idx < tangents.length; idx += 4) {
