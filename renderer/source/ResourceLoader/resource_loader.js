@@ -224,7 +224,7 @@ class ResourceLoader
                                     gltf.materials[i].normalTexture.samplerName = "u_NormalSampler";
                                     gltf.materials[i].parseTextureInfoExtensions(gltf.materials[i].normalTexture, "Normal");
                                     gltf.materials[i].textures.push(gltf.materials[i].normalTexture);
-                                    //gltf.materials[i].defines.push("HAS_NORMAL_MAP 1");
+                                    gltf.materials[i].defines.push("HAS_NORMAL_MAP 1");
                                     gltf.materials[i].defines.push("HAS_SC_NORMAL_MAP_0 1");
                                 }
                             }

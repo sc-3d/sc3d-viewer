@@ -813,10 +813,12 @@ class gltfPrimitive extends GltfObject
         if (gltf.extensionsUsed && gltf.extensionsUsed.includes("KHR_mesh_quantization")) {
             const positions = gltf.accessors[this.attributes.POSITION].getDeinterlacedView(gltf);
             const normals = gltf.accessors[this.attributes.NORMAL].getNormalizedTypedView(gltf);
-            const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getDeinterlacedView(gltf);
+            const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
+
+            const texcoords_f32 = new Float32Array(texcoords).map(c => c / 4095.0);
             
             //const 
-            tangents = generateTangents(positions, normals, texcoords);
+            tangents = generateTangents(positions, normals, texcoords_f32);
         }
         else {
             const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
