@@ -811,7 +811,7 @@ class gltfPrimitive extends GltfObject
         console.log(gltf.extensionsUsed);
         let tangents = [];
         if (gltf.extensionsUsed && gltf.extensionsUsed.includes("KHR_mesh_quantization")) {
-            const positions = gltf.accessors[this.attributes.POSITION].getDeinterlacedView(gltf);
+            const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
             const normals = gltf.accessors[this.attributes.NORMAL].getNormalizedTypedView(gltf);
             const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
 
